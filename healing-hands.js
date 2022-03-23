@@ -22,17 +22,17 @@ let level_multiplier = 2;
 
 // this should be the targets level, using personal level for now because of simplicity
 let heal_amount = actor.data.data.attributes.hd.total * level_multiplier;
-let results_title = `${actor.data.data.attributes.hd.total}[Total HD] * ${level_multiplier}[level multiplier]}`
+let results_title = `${actor.data.data.attributes.hd.total}[Total HD] * ${level_multiplier}[level multiplier]}`;
 
 console.log(heal_amount);
 if (heal_check >= 20) {
   heal_amount += actor.data.data.abilities.int.mod;
-  results_title += ` + ${actor.data.data.abilities.int.mod}[Intelligence Mod]`
+  results_title += ` + ${actor.data.data.abilities.int.mod}[Intelligence Mod]`;
 }
 console.log(heal_amount);
 if (heal_check >= 25) {
   heal_amount += actor.data.data.skills.kpl.rank;
-  results_title += ` + ${actor.data.data.skills.kpl.rank}[Knowledge Plains Rank]`
+  results_title += ` + ${actor.data.data.skills.kpl.rank}[Knowledge Plains Rank]`;
 }
 console.log(heal_amount);
 let results_html = `<table>
@@ -44,7 +44,7 @@ let results_html = `<table>
 
 <tbody>
   <tr>
-    <td colspan="4">
+    <td colspan="4" style="text-align:center">
       <a
         class="inline-roll inline-dsn-hidden inline-result decent-roll lil-expanded-inline-roll lil-enhanced-roll"
         title="1d20 + ${actor.data.data.skills.hea.mod}[Heal Modifier]"
@@ -59,37 +59,21 @@ let results_html = `<table>
   </tr>
 
   <tr>
-    <td class="lil-melded-type" colspan="2">
+    <td class="lil-melded-type" colspan="2" style="text-align:center">
       <a
         class="inline-roll inline-dsn-hidden inline-result middling-roll lil-melded-roll"
         title="${results_title}"
       >
         ${heal_amount}
       </a>
-      &nbsp;Positive<i
-        class="fas fa-seedling lil-damage-type"
-        style="color: white; text-shadow: lime 0px 0px 5px"
-      ></i>
+      <a class="inline-action" data-action="applyDamage" data-value="-${heal_amount}" title="Apply Healing" data-tags="">
+        <i class="fas fa-seedling"></i>
+        <i class="absolute fas fa-plus"></i>
+      </a>
     </td>
   </tr>
 </tbody>
 </table>
-
-<div class="flexcol card-buttons">
-<div class="card-button-group flexcol">
-  <label>Healing</label>
-  <div class="flexrow">
-    <button
-      data-action="applyDamage"
-      data-value="-${heal_amount}"
-      data-tags=""
-      disabled=""
-    >
-      Apply
-    </button>
-  </div>
-</div>
-</div>
 `;
 
 ChatMessage.create({
