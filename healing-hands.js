@@ -7,6 +7,7 @@ r.evaluate({ async: false });
 
 // get the target actor
 let target_actor = canvas.tokens.get(game.user.targets.ids[0]).actor
+let target_hd = target_actor.data.data.attributes.hd.total
 
 // add heal mod to the d20 roll
 let heal_check = r.total + actor.data.data.skills.hea.mod;
@@ -18,10 +19,10 @@ let level_multiplier = 2;
 // this should be the targets level, using personal level for now because of simplicity
 // canvas.tokens.get(game.user.targets.ids[0]).actor
 // this is the code we can retrieve the actor from the active token if we choose to
-let heal_amount = target_actor.data.data.attributes.hd.total * level_multiplier;
+let heal_amount = target_hd * level_multiplier;
 
 // construct the help text for the picky DM
-let results_title = `${actor.data.data.attributes.hd.total}[Total HD] * ${level_multiplier}[level multiplier]}`;
+let results_title = `${target_hd}[Target Total HD] * ${level_multiplier}[level multiplier]}`;
 
 // if we surpass the Treat Wounds DC by 5 we add the Int mod of the caster
 if (heal_check >= 20) {
