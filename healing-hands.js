@@ -2,18 +2,13 @@
 
 let r = new Roll("1d20");
 
-// The parsed terms of the roll formula
-console.log(r.terms); // [Die, OperatorTerm, NumericTerm, OperatorTerm, NumericTerm]
-
 // Execute the roll
 r.evaluate({ async: false });
 
-// The resulting equation after it was rolled
-console.log(r.result);
+// get the target actor
+let target_actor = canvas.tokens.get(game.user.targets.ids[0]).actor
 
-// The total resulting from the roll
-console.log(r.total);
-
+// add heal mod to the d20 roll
 let heal_check = r.total + actor.data.data.skills.hea.mod;
 
 // change this when you need to multiply your character
@@ -21,24 +16,30 @@ let heal_check = r.total + actor.data.data.skills.hea.mod;
 let level_multiplier = 2;
 
 // this should be the targets level, using personal level for now because of simplicity
-let heal_amount = actor.data.data.attributes.hd.total * level_multiplier;
+// canvas.tokens.get(game.user.targets.ids[0]).actor
+// this is the code we can retrieve the actor from the active token if we choose to
+let heal_amount = target_actor.data.data.attributes.hd.total * level_multiplier;
+
+// construct the help text for the picky DM
 let results_title = `${actor.data.data.attributes.hd.total}[Total HD] * ${level_multiplier}[level multiplier]}`;
 
-console.log(heal_amount);
+// if we surpass the Treat Wounds DC by 5 we add the Int mod of the caster
 if (heal_check >= 20) {
   heal_amount += actor.data.data.abilities.int.mod;
   results_title += ` + ${actor.data.data.abilities.int.mod}[Intelligence Mod]`;
 }
-console.log(heal_amount);
+
+// if we surpass the Treat Wounds TC by 10 we add the rank in knowledge plains
 if (heal_check >= 25) {
   heal_amount += actor.data.data.skills.kpl.rank;
   results_title += ` + ${actor.data.data.skills.kpl.rank}[Knowledge Plains Rank]`;
 }
-console.log(heal_amount);
+
+// construct the output HTML
 let results_html = `<table>
 <thead>
   <tr>
-    <th class="attack-flavor" colspan="2">Healer's Hands</th>
+    <th style="text-align:center" class="attack-flavor" colspan="2">Healer's Hands</th>
   </tr>
 </thead>
 
@@ -66,18 +67,21 @@ let results_html = `<table>
       >
         ${heal_amount}
       </a>
-      <a class="inline-action" data-action="applyDamage" data-value="-${heal_amount}" title="Apply Healing" data-tags="">
-        <i class="fas fa-seedling"></i>
-        <i class="absolute fas fa-plus"></i>
-      </a>
     </td>
   </tr>
 </tbody>
 </table>
 `;
 
+// Create the chat message
 ChatMessage.create({
   user: game.user._id,
   speaker: ChatMessage.getSpeaker({ token: actor }),
   content: results_html,
 });
+
+function applyDamage(actor, amount) {
+  //TODO
+  //actor.applyDamage(-amount)
+  console.log('this is working')
+}
