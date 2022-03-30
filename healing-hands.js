@@ -15,8 +15,7 @@ function healersHands() {
   const heal_check = r.total + actor.data.data.skills.hea.mod;
 
   // get the target actor's HD total
-  const target_actor = canvas.tokens.get(game.user.targets.ids[0]).actor
-  const target_hd = target_actor.data.data.attributes.hd.total
+  const target_hd = canvas.tokens.get(game.user.targets.ids[0]).actor.data.data.attributes.hd.total
 
   // heal rank progression based upon table from
   // https://aonprd.com/Skills.aspx?ItemName=Heal
@@ -37,13 +36,13 @@ function healersHands() {
   let results_title = `${target_hd}[Target Total HD] * ${heal_rank_multiplier}[Heal Rank Multiplier]}`;
 
   // if we surpass the Treat Wounds DC by 5 we add the Int mod of the caster
-  if (heal_check >= 20) {
+  if (heal_check >= 25) {
     heal_amount += actor.data.data.abilities.int.mod;
     results_title += ` + ${actor.data.data.abilities.int.mod}[Intelligence Mod]`;
   }
 
   // if we surpass the Treat Wounds DC by 10 we add the rank in knowledge plains
-  if (heal_check >= 25) {
+  if (heal_check >= 30) {
     heal_amount += actor.data.data.skills.kpl.rank;
     results_title += ` + ${actor.data.data.skills.kpl.rank}[Knowledge Plains Rank]`;
   }
