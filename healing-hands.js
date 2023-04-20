@@ -74,10 +74,10 @@ function healersHands() {
     <tr>
       <td class="lil-melded-type" colspan="2" style="text-align:center">
         <a
-          class="inline-result middling-roll lil-melded-roll"
+          class="inline-result lil-melded-roll"
           title="${results_title}"
         >
-          ${heal_amount}
+        [[/h ${heal_amount} # Healer's Hands]]{${heal_amount}}
         </a>
       </td>
     </tr>
