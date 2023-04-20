@@ -48,7 +48,8 @@ function healersHands() {
   }
 
   // construct the output HTML
-  let results_html = `<table>
+  let results_html = `<div class="message-content">
+  <table>
   <thead>
     <tr>
       <th style="text-align:center" class="attack-flavor" colspan="2">Healer's Hands</th>
@@ -77,12 +78,23 @@ function healersHands() {
           class="inline-result lil-melded-roll"
           title="${results_title}"
         >
-        [[/h ${heal_amount} # Healer's Hands]]{${heal_amount}}
+        ${heal_amount}
         </a>
       </td>
     </tr>
   </tbody>
   </table>
+  <div class="pf1 chat-card damage-card heal">
+    <div class="flexcol card-buttons">
+          <div class="card-button-group flexcol">
+              <label>Healing</label>
+              <div class="flexrow">
+                  <button type="button" data-action="applyDamage" data-value="-${heal_amount}">Apply</button>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
   `;
 
   // Create the chat message
