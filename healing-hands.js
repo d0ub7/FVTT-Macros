@@ -7,12 +7,13 @@ if (!actor || !game.user.targets.ids[0] || game.user.targets.ids.length > 1) {
   healersHands()
 }
 
-function healersHands() {
+async function healersHands() {
   // Roll the die
-  const r = new Roll("1d20").evaluate({ async: false });
+  const heal_roll = await actor.rollSkill('hea')
 
+  console.log(heal_roll)
   // add heal mod to the d20 roll
-  const heal_check = r.total + actor.system.skills.hea.mod + 8;
+  const heal_check = heal_roll.rolls[0].total
 
   // get the target actor's HD total
   const target_hd = canvas.tokens.get(game.user.targets.ids[0]).actor.system.attributes.hd.total
@@ -57,21 +58,6 @@ function healersHands() {
   </thead>
 
   <tbody>
-    <tr>
-      <td colspan="4" style="text-align:center">
-        <a
-          class="inline-result decent-roll lil-enhanced-roll"
-          title="1d20 + ${actor.system.skills.hea.mod}[Heal Modifier] + 3 [Healer's Kit] + 5 [Gloves of Healing]"
-          data-roll-natural="${r.total}"
-        >
-          <span class="lil-roll roll die d20">${r.total}</span
-          ><span class="lil-bonus">+${actor.system.skills.hea.mod}</span
-          ><span class="lil-arrow">⇒</span
-          ><span class="lil-total">${heal_check}</span></a
-        >
-      </td>
-    </tr>
-
     <tr>
       <td class="lil-melded-type" colspan="2" style="text-align:center">
         <a
