@@ -5,24 +5,6 @@ if (!actor || !game.user.targets.ids[0] || game.user.targets.ids.length > 1) {
   pounce_charge()
 }
 
-async function create_dialog(label, type = 'text', options = '0') {
-  ret = await warpgate.menu({
-    inputs: [{
-      label: label,
-      type: 'text',
-      options: options
-    }]
-    },
-    {
-      options: {
-        width: '100px',
-        height: '100%'
-      }
-  })
-
-  return parseInt(ret.inputs[0])
-}
-
 async function get_height(total) {
   return Math.floor((total + Math.floor(((actor.system.attributes.speed.land.total - 30) / 10) *4)) /4)
 }
@@ -34,10 +16,23 @@ async function pounce_charge() {
 
   // add 1/2 knowledge Plains ranks from https://www.aonprd.com/FeatDisplay.aspx?ItemName=Wind%20Leaper
   total_roll_attack += Math.floor(actor.system.skills.kpl.rank/2)
+
   const height = await get_height(total_roll_attack)
 
   // calulate for difference in height between actor and target
-  const height_differential = await create_dialog('Enter height diifferential')
+  const height_menu = await warpgate.menu({
+    inputs: [{
+      label: 'Enter height diifferential',
+      type: 'text',
+      options: '0'
+    }],
+    options: {
+      width: '100px',
+      height: '100%'
+    }
+  })
+
+  const height_differential = (parseInt(height_menu.inputs[0]) == NaN) ? 0 : parseInt(height_menu.inputs[0])
   const total_height = height + height_differential
 
   // calculate damage from height from https://aonprd.com/FeatDisplay.aspx?ItemName=Branch%20Pounce
