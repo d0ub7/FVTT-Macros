@@ -56,21 +56,21 @@ async function pounce_charge() {
   height_target_damage += 2
 
   // output damage to target
-  ChatMessage.create({
+  await ChatMessage.create({
     content: `Bonus damage to ${game.user.targets.first().document.name} from falling from ${total_height}ft`,
   })
   const r = await new Roll(`${height_target_damage}d6`).evaluate({async: true});
-  ChatMessage.create({
+  await ChatMessage.create({
     type: CONST.CHAT_MESSAGE_TYPES.ROLL,
     rolls:[r]
   });
 
   //output damage to self, reduced to all 1s by https://fvtt01.kronos-gaming.net/game
-  ChatMessage.create({
+  await ChatMessage.create({
     content: `Bonus damage to ${actor.name} from falling from ${total_height}ft`,
   })
   const u = await new Roll(`${height_self_damage}d1`).evaluate({async: true});
-  ChatMessage.create({
+  await ChatMessage.create({
     type: CONST.CHAT_MESSAGE_TYPES.ROLL,
     rolls:[u]
   });
