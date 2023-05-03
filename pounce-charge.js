@@ -33,7 +33,7 @@ async function pounce_charge() {
   })
 
   const height_differential = (parseInt(height_menu.inputs[0]) == NaN) ? 0 : parseInt(height_menu.inputs[0])
-  const total_height = height + height_differential
+  const total_height = height + height_differential + 10
 
   // calculate damage from height from https://aonprd.com/FeatDisplay.aspx?ItemName=Branch%20Pounce
   let height_target_damage = Math.floor(total_height/10)
@@ -69,7 +69,7 @@ async function pounce_charge() {
   ChatMessage.create({
     content: `Bonus damage to ${actor.name} from falling from ${total_height}ft`,
   })
-  const u = await new Roll(`${height_target_damage}d1`).evaluate({async: true});
+  const u = await new Roll(`${height_self_damage}d1`).evaluate({async: true});
   ChatMessage.create({
     type: CONST.CHAT_MESSAGE_TYPES.ROLL,
     rolls:[u]
