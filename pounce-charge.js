@@ -6,7 +6,7 @@ if (!actor || !game.user.targets.ids[0] || game.user.targets.ids.length > 1) {
 }
 
 async function get_height(total) {
-  return Math.floor((total + Math.floor(((actor.system.attributes.speed.land.total - 30) / 10) *4)) /4)
+  return Math.floor((total + Math.floor(((actor.system.attributes.speed.land.total - 30) / 10) * 4)) / 4)
 }
 
 async function pounce_charge() {
@@ -15,7 +15,7 @@ async function pounce_charge() {
   let total_roll_attack = acrobatics_roll_attack.rolls[0].total
 
   // add 1/2 knowledge Plains ranks from https://www.aonprd.com/FeatDisplay.aspx?ItemName=Wind%20Leaper
-  total_roll_attack += Math.floor(actor.system.skills.kpl.rank/2)
+  total_roll_attack += Math.floor(actor.system.skills.kpl.rank / 2)
 
   const height = await get_height(total_roll_attack)
 
@@ -36,7 +36,7 @@ async function pounce_charge() {
   const total_height = height + height_differential + 10
 
   // calculate damage from height from https://aonprd.com/FeatDisplay.aspx?ItemName=Branch%20Pounce
-  let height_target_damage = Math.floor(total_height/10)
+  let height_target_damage = Math.floor(total_height / 10)
   let height_self_damage = height_target_damage - 1
 
   // see if we reduce damage from falling
@@ -59,19 +59,19 @@ async function pounce_charge() {
   await ChatMessage.create({
     content: `Bonus damage to ${game.user.targets.first().document.name} from falling from ${total_height}ft`,
   })
-  const r = await new Roll(`${height_target_damage}d6`).evaluate({async: true});
+  const r = await new Roll(`${height_target_damage}d6`).evaluate({ async: true });
   await ChatMessage.create({
     type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-    rolls:[r]
+    rolls: [r]
   });
 
   //output damage to self, reduced to all 1s by https://fvtt01.kronos-gaming.net/game
   await ChatMessage.create({
     content: `Bonus damage to ${actor.name} from falling from ${total_height}ft`,
   })
-  const u = await new Roll(`${height_self_damage}d1`).evaluate({async: true});
+  const u = await new Roll(`${height_self_damage}d1`).evaluate({ async: true });
   await ChatMessage.create({
     type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-    rolls:[u]
+    rolls: [u]
   });
 }

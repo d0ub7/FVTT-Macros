@@ -21,14 +21,14 @@ async function healersHands() {
   // heal rank progression based upon table from
   // https://aonprd.com/Skills.aspx?ItemName=Heal
   const heal_rank_multiplier =
-  // 20 Ranks: When you treat deadly wounds, the target recovers hit point and ability damage as if it had rested for 3 days with long-term care.
-  actor.system.skills.hea.rank >= 14 ? 12 : 
-  // 15 Ranks: When you treat deadly wounds, the creature recovers hit point and ability damage as if it had rested for 3 days.
-  actor.system.skills.hea.rank >= 10 ? 6 :
-  // 10 Ranks: When you treat deadly wounds, the target recovers hit points as if it had rested for a full day with long-term care.
-  actor.system.skills.hea.rank >= 7 ? 4 :
-  // 5 Ranks: When you treat deadly wounds, the target recovers hit points and ability damage as if it had rested for a full day.
-  actor.system.skills.hea.rank >= 5 ? 2 : 1;
+    // 20 Ranks: When you treat deadly wounds, the target recovers hit point and ability damage as if it had rested for 3 days with long-term care.
+    actor.system.skills.hea.rank >= 14 ? 12 :
+      // 15 Ranks: When you treat deadly wounds, the creature recovers hit point and ability damage as if it had rested for 3 days.
+      actor.system.skills.hea.rank >= 10 ? 6 :
+        // 10 Ranks: When you treat deadly wounds, the target recovers hit points as if it had rested for a full day with long-term care.
+        actor.system.skills.hea.rank >= 7 ? 4 :
+          // 5 Ranks: When you treat deadly wounds, the target recovers hit points and ability damage as if it had rested for a full day.
+          actor.system.skills.hea.rank >= 5 ? 2 : 1;
 
   // get base heal amount
   let heal_amount = target_hd * heal_rank_multiplier;
