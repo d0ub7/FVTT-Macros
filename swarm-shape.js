@@ -1,3 +1,4 @@
+// verify state
 if (!actor) {
   ui.notifications.warn("Are you even real?");
 } else {
@@ -5,15 +6,17 @@ if (!actor) {
 }
 
 async function wildShape() {
-  let druidLevel = actor.items.find(
+  const druidLevel = actor.items.find(
     (o) => o.type === "class" && o.name === "Druid",
   )?.system.level;
 
+  // globals
   const source = "Wild Shape";
-  let newSpeeds = duplicate(actor.system.attributes.speed);
-  let speedTypes = Object.keys(newSpeeds);
-  const energized = ["acid", "cold", "electricity", "fire"];
-  const iselda = {};
+  const newSpeeds = duplicate(actor.system.attributes.speed);
+  const speedTypes = Object.keys(newSpeeds);
+  const energized = ["acid", "cold", "electric", "fire"];
+
+  // templates object
   const templates = {
     clestial: {
       template: {
@@ -44,6 +47,7 @@ async function wildShape() {
     },
   };
 
+  // size changes object
   const changes = {
     fine: {
       changes: [
@@ -137,6 +141,7 @@ async function wildShape() {
     },
   };
 
+  // form change object
   const forms = {
     ant: {
       mult: 10,
@@ -148,6 +153,7 @@ async function wildShape() {
       senses: {
         dv: 60,
         scent: true,
+        custom: "Scent",
       },
       sp: [
         {
@@ -258,6 +264,7 @@ async function wildShape() {
       senses: {
         ll: true,
         scent: true,
+        custom: "Scent",
       },
       sp: [
         {
@@ -295,11 +302,12 @@ async function wildShape() {
   };
 
   async function swarmShape(form, template, energy) {
+    // organize data objects
     let changeData = {};
     let buffActive = true;
     const buffChanges = [];
     if (form == "iselda") {
-      changeData = { template: {} };
+      changeData = { size: "sm", template: {} };
       buffActive = false;
     } else {
       const formData = forms[form];
@@ -312,11 +320,13 @@ async function wildShape() {
     }
 
     let itemsToEmbed = [];
+
+    // create buff if it does not exist
+    // only exists to sync with mightyMorphin since it deletes buff
     let buff = actor.collections.items.find(
       (o) => o.type === "buff" && o.name === source,
     );
 
-    // only exists to sync with mightyMorphin
     if (!buff) {
       let buffData = { system: {} };
       buffData.system = duplicate(game.system.template.Item.buff);
@@ -335,11 +345,13 @@ async function wildShape() {
       itemsToEmbed.push(buffData);
     }
 
+    // set duration of buff
     let durationData = {
       value: actor.system.attributes.hd.total.toString(),
       units: "hour",
     };
 
+    // set speeds inside buff
     if (!!changeData.speed) {
       for (let i = 0; i < speedTypes.length; i++) {
         // Find the speed the form gives for the type
@@ -361,7 +373,7 @@ async function wildShape() {
       }
     }
 
-    await actor.createEmbeddedDocuments("Item", itemsToEmbed);
+    // reget buff and set data
     buff = actor.collections.items.find(
       (o) => o.type === "buff" && o.name === source,
     );
@@ -374,14 +386,23 @@ async function wildShape() {
       },
     ];
 
-    // add effects to swarmattack
     let attack = actor.collections.items.find(
       (o) => o.type === "attack" && o.name === "Swarm",
     );
     let tempAttack = duplicate(attack.system.actions);
-
+    console.log(tempAttack);
     let attackSpecial;
     let attackSave;
+    // add elemental damage to swarm attack
+    partObject = [
+      "1d6",
+      {
+        values: [`${energy}`],
+        custom: "",
+      },
+    ];
+    // add effects to swarmattack
+    tempAttack[0].damage.parts[1] = partObject;
     if (!!changeData.sp) {
       changeData.sp.forEach((element) => {
         if (!element.dc) {
@@ -391,6 +412,7 @@ async function wildShape() {
         }
       });
     }
+    // organize attack data
     let attackUpdate = [
       {
         _id: attack.id,
@@ -398,20 +420,24 @@ async function wildShape() {
       },
     ];
 
+    // get senses
     let senseObject = {
-      dv: 0,
-      ts: 0,
       bs: 0,
       bse: 0,
+      custom: "",
+      dv: 0,
       ll: { enabled: false, multiplier: { dim: 2, bright: 2 } },
+      sc: false,
+      scent: false,
+      si: false,
       sid: false,
       tr: false,
-      si: false,
-      sc: false,
-      custom: "",
+      ts: 0,
     };
     let newSenses = { ...senseObject, ...changeData.senses };
+    console.log(newSenses);
 
+    // get elemental resists
     let newEres = "";
     if (!!changeData.template.eres) {
       let elementHandled = false;
@@ -428,6 +454,7 @@ async function wildShape() {
       newEres = newEres.trim();
     }
 
+    // get damage reductions
     let newDr = "";
     if (!!changeData.template.dr) {
       changeData.template.dr.forEach((element) => {
@@ -435,6 +462,7 @@ async function wildShape() {
       });
     }
 
+    // get damage immunities
     let newDi = "";
     if (!!changeData.di) {
       changeData.di.forEach((element) => {
@@ -443,20 +471,24 @@ async function wildShape() {
       newDi = newDi.trim();
     }
 
+    // update actor
+    await actor.createEmbeddedDocuments("Item", itemsToEmbed);
     await actor.updateEmbeddedDocuments("Item", attackUpdate);
     await actor.updateEmbeddedDocuments("Item", buffUpdate);
+    await actor.update(mergeObject({ "system.traits.size": changeData.size }));
     await actor.update(mergeObject({ "system.traits.eres": newEres }));
     await actor.update(mergeObject({ "system.traits.dr": newDr }));
     await actor.update(mergeObject({ "system.traits.di.custom": newDi }));
-    await actor.update(mergeObject({ "system.traits.size": changeData.size }));
     await actor.update(mergeObject({ "system.traits.senses": newSenses }));
   }
 
-  let inputs = [];
-  let buttons = [];
+  // generate form
+  const inputs = [];
+  const buttons = [];
 
+  // generate template dropdown
+  const templateOptions = [];
   let templateValue = { type: "select", label: "template" };
-  let templateOptions = [];
   for (const template in templates) {
     let value = {
       html: template,
@@ -467,8 +499,9 @@ async function wildShape() {
   templateValue.options = templateOptions;
   inputs.push(templateValue);
 
+  // generate energy dropdown
+  const energizedOptions = [];
   let energizedValue = { type: "select", label: "element" };
-  let energizedOptions = [];
   energized.forEach(function (element) {
     let value = {
       html: element,
@@ -479,6 +512,7 @@ async function wildShape() {
   energizedValue.options = energizedOptions;
   inputs.push(energizedValue);
 
+  // generate form buttons
   for (const form in forms) {
     let value = {};
     value = {
@@ -488,6 +522,7 @@ async function wildShape() {
     buttons.push(value);
   }
 
+  // generate revert button
   let iseldaButton = {
     label: "Iselda",
     value: "iselda",
@@ -498,6 +533,7 @@ async function wildShape() {
   formData.inputs = inputs;
   formData.buttons = buttons;
   if (!!formData) {
+    // generate form and pass info to swarmShape
     const choice = await warpgate.menu(formData);
     const form = choice.buttons;
     const template = choice.inputs[0].template;
