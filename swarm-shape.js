@@ -143,7 +143,7 @@ async function wildShape() {
 
   // form change object
   const forms = {
-    ant: {
+    ants: {
       mult: 10,
       size: "fine",
       speed: {
@@ -170,7 +170,7 @@ async function wildShape() {
       di: ["weapon damage", "mind-affecting effects"],
     },
 
-    leech: {
+    leeches: {
       mult: 8,
       size: "dim",
       speed: {
@@ -195,7 +195,7 @@ async function wildShape() {
       di: ["weapon damage", "mind-affecting effects"],
     },
 
-    centipede: {
+    centipedes: {
       mult: 8,
       size: "dim",
       speed: {
@@ -218,7 +218,7 @@ async function wildShape() {
       di: ["weapon damage", "mind-affecting effects"],
     },
 
-    wasp: {
+    wasps: {
       mult: 6,
       size: "dim",
       speed: {
@@ -240,7 +240,7 @@ async function wildShape() {
       di: ["weapon damage", "mind-affecting effects"],
     },
 
-    crab: {
+    crabs: {
       mult: 6,
       size: "dim",
       speed: {
@@ -253,7 +253,7 @@ async function wildShape() {
       di: ["weapon damage", "mind-affecting effects"],
     },
 
-    rat: {
+    rats: {
       mult: 4,
       size: "tiny",
       speed: {
@@ -277,7 +277,7 @@ async function wildShape() {
       ],
     },
 
-    spider: {
+    spiders: {
       mult: 2,
       size: "dim",
       speed: {
@@ -303,12 +303,14 @@ async function wildShape() {
 
   async function swarmShape(form, template, energy) {
     // organize data objects
+    let chatMessage = ''
     let changeData = {};
     let buffActive = true;
     const buffChanges = [];
     if (form == "iselda") {
       changeData = { size: "sm", template: {} };
       buffActive = false;
+      chatMessage = 'Iselda reverts to her halfling form'
     } else {
       const formData = forms[form];
       const templateData = templates[template];
@@ -317,6 +319,9 @@ async function wildShape() {
       changeData.changes.forEach((element) => {
         buffChanges.push(element);
       });
+      const numSwarm = Math.floor(druidLevel/changeData.mult)
+      const suffix = numSwarm == 1 ? 'swarm' : 'swarms'
+      chatMessage = `Iselda transforms into ${numSwarm} ${suffix} of ${template} ${energy} ${form}`
     }
 
     let itemsToEmbed = [];
@@ -478,6 +483,9 @@ async function wildShape() {
     await actor.update(mergeObject({ "system.traits.dr": newDr }));
     await actor.update(mergeObject({ "system.traits.di.custom": newDi }));
     await actor.update(mergeObject({ "system.traits.senses": newSenses }));
+
+    // create chat message
+    await ChatMessage.create({ content: chatMessage })
   }
 
   // generate form
