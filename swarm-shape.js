@@ -391,6 +391,15 @@ async function wildShape() {
       },
     ];
 
+    // set not a halfling buff
+    buffTwo = actor.collections.items.find(
+      (o) => o.type === "buff" && o.name === 'not a halfling',
+    );
+    buffUpdate.push({
+        _id: buffTwo.id,
+        "system.active": buffActive,
+    })
+
     let attack = actor.collections.items.find(
       (o) => o.type === "attack" && o.name === "Swarm",
     );
