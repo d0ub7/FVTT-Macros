@@ -13,6 +13,7 @@ async function wildShape() {
   let newSpeeds = duplicate(actor.system.attributes.speed);
   let speedTypes = Object.keys(newSpeeds);
   const energized = ["acid", "cold", "electricity", "fire"];
+  const iselda = {};
   const templates = {
     clestial: {
       template: {
@@ -294,20 +295,28 @@ async function wildShape() {
   };
 
   async function swarmShape(form, template, energy) {
-    const formData = forms[form];
-    const templateData = templates[template];
-    const sizeData = changes[formData.size];
-    const changeData = { ...formData, ...templateData, ...sizeData };
+    let changeData = {};
+    let buffActive = true;
     const buffChanges = [];
-    changeData.changes.forEach((element) => {
-      buffChanges.push(element);
-    });
+    if (form == "iselda") {
+      changeData = { template: {} };
+      buffActive = false;
+    } else {
+      const formData = forms[form];
+      const templateData = templates[template];
+      const sizeData = changes[formData.size];
+      changeData = { ...formData, ...templateData, ...sizeData };
+      changeData.changes.forEach((element) => {
+        buffChanges.push(element);
+      });
+    }
 
     let itemsToEmbed = [];
     let buff = actor.collections.items.find(
       (o) => o.type === "buff" && o.name === source,
     );
 
+    // only exists to sync with mightyMorphin
     if (!buff) {
       let buffData = { system: {} };
       buffData.system = duplicate(game.system.template.Item.buff);
@@ -331,23 +340,25 @@ async function wildShape() {
       units: "hour",
     };
 
-    for (let i = 0; i < speedTypes.length; i++) {
-      // Find the speed the form gives for the type
-      let speed = changeData.speed[speedTypes[i]];
-      let speedChange = {
-        formula: "0",
-        operator: "set",
-        subTarget: speedTypes[i] + "Speed",
-        modifier: "base",
-        priority: 100,
-        value: 0,
-      };
-      if (!!speed) {
-        // if the form has this speed add it
-        speedChange.formula = speed.toString();
-        speedChange.value = speed;
+    if (!!changeData.speed) {
+      for (let i = 0; i < speedTypes.length; i++) {
+        // Find the speed the form gives for the type
+        let speed = changeData.speed[speedTypes[i]];
+        let speedChange = {
+          formula: "0",
+          operator: "set",
+          subTarget: speedTypes[i] + "Speed",
+          modifier: "base",
+          priority: 100,
+          value: 0,
+        };
+        if (!!speed) {
+          // if the form has this speed add it
+          speedChange.formula = speed.toString();
+          speedChange.value = speed;
+        }
+        buffChanges.push(speedChange);
       }
-      buffChanges.push(speedChange);
     }
 
     await actor.createEmbeddedDocuments("Item", itemsToEmbed);
@@ -359,7 +370,7 @@ async function wildShape() {
         _id: buff.id,
         "system.duration": durationData,
         "system.changes": buffChanges,
-        "system.active": true,
+        "system.active": buffActive,
       },
     ];
 
@@ -369,8 +380,6 @@ async function wildShape() {
     );
     let tempAttack = duplicate(attack.system.actions);
 
-    console.log(attack);
-    console.log(tempAttack[0]);
     let attackSpecial;
     let attackSave;
     if (!!changeData.sp) {
@@ -403,8 +412,8 @@ async function wildShape() {
     };
     let newSenses = { ...senseObject, ...changeData.senses };
 
+    let newEres = "";
     if (!!changeData.template.eres) {
-      let newEres = "";
       let elementHandled = false;
       changeData.template.eres.forEach((element) => {
         if (energy == element.type) {
@@ -417,28 +426,28 @@ async function wildShape() {
         newEres += `${energy} 10 `;
       }
       newEres = newEres.trim();
-      await actor.update(mergeObject({ "system.traits.eres": newEres }));
     }
 
+    let newDr = "";
     if (!!changeData.template.dr) {
-      let newDr = "";
       changeData.template.dr.forEach((element) => {
         newDr += `${element.amount}/${element.type}`;
       });
-      await actor.update(mergeObject({ "system.traits.dr": newDr }));
     }
 
+    let newDi = "";
     if (!!changeData.di) {
-      let newDi = "";
       changeData.di.forEach((element) => {
         newDi += element + " ";
       });
       newDi = newDi.trim();
-      await actor.update(mergeObject({ "system.traits.di.custom": newDi }));
     }
 
     await actor.updateEmbeddedDocuments("Item", attackUpdate);
     await actor.updateEmbeddedDocuments("Item", buffUpdate);
+    await actor.update(mergeObject({ "system.traits.eres": newEres }));
+    await actor.update(mergeObject({ "system.traits.dr": newDr }));
+    await actor.update(mergeObject({ "system.traits.di.custom": newDi }));
     await actor.update(mergeObject({ "system.traits.size": changeData.size }));
     await actor.update(mergeObject({ "system.traits.senses": newSenses }));
   }
@@ -479,11 +488,11 @@ async function wildShape() {
     buttons.push(value);
   }
 
-  let iselda = {
+  let iseldaButton = {
     label: "Iselda",
     value: "iselda",
   };
-  buttons.push(iselda);
+  buttons.push(iseldaButton);
 
   let formData = {};
   formData.inputs = inputs;
@@ -493,6 +502,6 @@ async function wildShape() {
     const form = choice.buttons;
     const template = choice.inputs[0].template;
     const element = choice.inputs[1].element;
-    swarmShape(form, template, element);
+    await swarmShape(form, template, element);
   }
 }
