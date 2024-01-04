@@ -390,7 +390,6 @@ async function wildShape() {
       (o) => o.type === "attack" && o.name === "Swarm",
     );
     let tempAttack = duplicate(attack.system.actions);
-    console.log(tempAttack);
     let attackSpecial;
     let attackSave;
     // add elemental damage to swarm attack
@@ -435,7 +434,6 @@ async function wildShape() {
       ts: 0,
     };
     let newSenses = { ...senseObject, ...changeData.senses };
-    console.log(newSenses);
 
     // get elemental resists
     let newEres = "";
