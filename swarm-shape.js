@@ -1,3 +1,9 @@
+/**
+* Swarm Shape macro for Swarm Monger druid
+* Macro assumes you have Energiezed Claws + Planar Wild Shape
+* Assumes you have an attack with it's 0th action both named Swarm
+*/
+
 // verify state
 if (!actor) {
   ui.notifications.warn("Are you even real?");
@@ -12,8 +18,6 @@ async function wildShape() {
 
   // globals
   const source = "Wild Shape";
-  const newSpeeds = duplicate(actor.system.attributes.speed);
-  const speedTypes = Object.keys(newSpeeds);
   const energized = ["acid", "cold", "electric", "fire"];
 
   // templates object
@@ -307,10 +311,11 @@ async function wildShape() {
     let changeData = {};
     let buffActive = true;
     const buffChanges = [];
-    if (form == "iselda") {
+    const itemsToEmbed = [];
+    if (form == actor.name) {
       changeData = { size: "sm", template: {} };
       buffActive = false;
-      chatMessage = 'Iselda reverts to her halfling form'
+      chatMessage = `${actor.name} reverts to her natural form`
     } else {
       const formData = forms[form];
       const templateData = templates[template];
@@ -323,8 +328,6 @@ async function wildShape() {
       const suffix = numSwarm == 1 ? 'swarm' : 'swarms'
       chatMessage = `Iselda transforms into ${numSwarm} ${suffix} of ${template} ${energy} ${form}`
     }
-
-    let itemsToEmbed = [];
 
     // create buff if it does not exist
     // only exists to sync with mightyMorphin since it deletes buff
@@ -357,6 +360,8 @@ async function wildShape() {
     };
 
     // set speeds inside buff
+    const newSpeeds = duplicate(actor.system.attributes.speed);
+    const speedTypes = Object.keys(newSpeeds);
     if (!!changeData.speed) {
       for (let i = 0; i < speedTypes.length; i++) {
         // Find the speed the form gives for the type
@@ -406,7 +411,8 @@ async function wildShape() {
     let tempAttack = duplicate(attack.system.actions);
     let attackSpecial;
     let attackSave;
-    // add elemental damage to swarm attack
+
+    // add energized claws damage to swarm attack
     partObject = [
       "1d6",
       {
@@ -414,7 +420,7 @@ async function wildShape() {
         custom: "",
       },
     ];
-    // add effects to swarmattack
+    // add energized claws effects to swarmattack
     tempAttack[0].damage.parts[1] = partObject;
     if (!!changeData.sp) {
       changeData.sp.forEach((element) => {
@@ -425,6 +431,7 @@ async function wildShape() {
         }
       });
     }
+
     // organize attack data
     let attackUpdate = [
       {
@@ -538,11 +545,11 @@ async function wildShape() {
   }
 
   // generate revert button
-  let iseldaButton = {
-    label: "Iselda",
-    value: "iselda",
+  let revertButton = {
+    label: actor.name,
+    value: actor.name,
   };
-  buttons.push(iseldaButton);
+  buttons.push(revertButton);
 
   let formData = {};
   formData.inputs = inputs;
