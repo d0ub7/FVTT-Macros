@@ -1,8 +1,8 @@
 /**
-* Swarm Shape macro for Swarm Monger druid
-* Macro assumes you have Energiezed Claws + Planar Wild Shape
-* Assumes you have an attack with it's 0th action both named Swarm
-*/
+ * Swarm Shape macro for Swarm Monger druid
+ * Macro assumes you have Energiezed Claws + Planar Wild Shape
+ * Assumes you have an attack with it's 0th action both named Swarm
+ */
 
 // verify state
 if (!actor) {
@@ -12,9 +12,9 @@ if (!actor) {
 }
 
 /**
-* wildShape
-* Entry point for the macro
-*/
+ * wildShape
+ * Entry point for the macro
+ */
 async function wildShape() {
   const druidLevel = actor.items.find(
     (o) => o.type === "class" && o.name === "Druid",
@@ -310,14 +310,14 @@ async function wildShape() {
   };
 
   /**
-    * swarmShape
-    * @param {string} form - the form to change into
-    * @param {string} template - the template to apply
-    * @param {string} energy - the energy to apply
-    */
+   * swarmShape
+   * @param {string} form - the form to change into
+   * @param {string} template - the template to apply
+   * @param {string} energy - the energy to apply
+   */
   async function swarmShape(form, template, energy) {
     // organize data objects
-    let chatMessage = ''
+    let chatMessage = "";
     let changeData = {};
     let buffActive = true;
     const buffChanges = [];
@@ -325,7 +325,7 @@ async function wildShape() {
     if (form == actor.name) {
       changeData = { size: "sm", template: {} };
       buffActive = false;
-      chatMessage = `${actor.name} reverts to her natural form`
+      chatMessage = `${actor.name} reverts to her natural form`;
     } else {
       const formData = forms[form];
       const templateData = templates[template];
@@ -334,9 +334,9 @@ async function wildShape() {
       changeData.changes.forEach((element) => {
         buffChanges.push(element);
       });
-      const numSwarm = Math.floor(druidLevel/changeData.mult)
-      const suffix = numSwarm == 1 ? 'swarm' : 'swarms'
-      chatMessage = `Iselda transforms into ${numSwarm} ${suffix} of ${template} ${energy} ${form}`
+      const numSwarm = Math.floor(druidLevel / changeData.mult);
+      const suffix = numSwarm == 1 ? "swarm" : "swarms";
+      chatMessage = `Iselda transforms into ${numSwarm} ${suffix} of ${template} ${energy} ${form}`;
     }
 
     // create buff if it does not exist
@@ -408,12 +408,12 @@ async function wildShape() {
 
     // set not a halfling buff
     buffTwo = actor.collections.items.find(
-      (o) => o.type === "buff" && o.name === 'not a halfling',
+      (o) => o.type === "buff" && o.name === "not a halfling",
     );
     buffUpdate.push({
-        _id: buffTwo.id,
-        "system.active": buffActive,
-    })
+      _id: buffTwo.id,
+      "system.active": buffActive,
+    });
 
     let attack = actor.collections.items.find(
       (o) => o.type === "attack" && o.name === "Swarm",
@@ -500,18 +500,23 @@ async function wildShape() {
       newDi = newDi.trim();
     }
 
+    // create object to merge
+    const objectToMerge = {
+      size: changeData.size,
+      eres: newEres,
+      dr: newDr,
+      "di.custom": newDi,
+      senses: newSenses,
+    };
+
     // update actor
     await actor.createEmbeddedDocuments("Item", itemsToEmbed);
     await actor.updateEmbeddedDocuments("Item", attackUpdate);
     await actor.updateEmbeddedDocuments("Item", buffUpdate);
-    await actor.update(mergeObject({ "system.traits.size": changeData.size }));
-    await actor.update(mergeObject({ "system.traits.eres": newEres }));
-    await actor.update(mergeObject({ "system.traits.dr": newDr }));
-    await actor.update(mergeObject({ "system.traits.di.custom": newDi }));
-    await actor.update(mergeObject({ "system.traits.senses": newSenses }));
+    await actor.update(mergeObject({ "system.traits": objectToMerge }));
 
     // create chat message
-    await ChatMessage.create({ content: chatMessage })
+    await ChatMessage.create({ content: chatMessage });
   }
 
   // generate foundry form data
