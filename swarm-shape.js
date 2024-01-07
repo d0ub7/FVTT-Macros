@@ -11,6 +11,10 @@ if (!actor) {
   wildShape();
 }
 
+/**
+* wildShape
+* Entry point for the macro
+*/
 async function wildShape() {
   const druidLevel = actor.items.find(
     (o) => o.type === "class" && o.name === "Druid",
@@ -305,6 +309,12 @@ async function wildShape() {
     },
   };
 
+  /**
+    * swarmShape
+    * @param {string} form - the form to change into
+    * @param {string} template - the template to apply
+    * @param {string} energy - the energy to apply
+    */
   async function swarmShape(form, template, energy) {
     // organize data objects
     let chatMessage = ''
@@ -504,7 +514,7 @@ async function wildShape() {
     await ChatMessage.create({ content: chatMessage })
   }
 
-  // generate form
+  // generate foundry form data
   const inputs = [];
   const buttons = [];
 
@@ -534,7 +544,7 @@ async function wildShape() {
   energizedValue.options = energizedOptions;
   inputs.push(energizedValue);
 
-  // generate form buttons
+  // generate wild shape form buttons
   for (const form in forms) {
     let value = {};
     value = {
