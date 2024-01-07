@@ -8,6 +8,7 @@ if (!actor || !game.user.targets.ids[0] || game.user.targets.ids.length > 1) {
 }
 
 async function healersHands() {
+  // https://www.aonprd.com/ArchetypeDisplay.aspx?FixedName=Rogue%20Phantom%20Thief
   // Get Phantom Thief level / 2 for Refined Education
   const rank_bonus = actor.classes.rogue.level / 2;
 
