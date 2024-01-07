@@ -2,33 +2,42 @@
 
 // Verify state
 if (!actor || !game.user.targets.ids[0] || game.user.targets.ids.length > 1) {
-  ui.notifications.warn("You must be targeting a single token")
+  ui.notifications.warn("You must be targeting a single token");
 } else {
-  healersHands()
+  healersHands();
 }
 
 async function healersHands() {
-  // Roll the die
-  const heal_roll = await actor.rollSkill('hea')
+  // Get Phantom Thief level / 2 for Refined Education
+  const rank_bonus = actor.classes.rogue.level / 2;
 
-  console.log(heal_roll)
+  // Roll the die
+  const heal_roll = await actor.rollSkill("hea");
+
+  console.log(heal_roll);
   // add heal mod to the d20 roll
-  const heal_check = heal_roll.rolls[0].total
+  const heal_check = heal_roll.rolls[0].total;
 
   // get the target actor's HD total
-  const target_hd = canvas.tokens.get(game.user.targets.ids[0]).actor.system.attributes.hd.total
+  const target_hd = canvas.tokens.get(game.user.targets.ids[0]).actor.system
+    .attributes.hd.total;
 
   // heal rank progression based upon table from
   // https://aonprd.com/Skills.aspx?ItemName=Heal
   const heal_rank_multiplier =
     // 20 Ranks: When you treat deadly wounds, the target recovers hit point and ability damage as if it had rested for 3 days with long-term care.
-    actor.system.skills.hea.rank >= 14 ? 12 :
-      // 15 Ranks: When you treat deadly wounds, the creature recovers hit point and ability damage as if it had rested for 3 days.
-      actor.system.skills.hea.rank >= 10 ? 6 :
-        // 10 Ranks: When you treat deadly wounds, the target recovers hit points as if it had rested for a full day with long-term care.
-        actor.system.skills.hea.rank >= 7 ? 4 :
-          // 5 Ranks: When you treat deadly wounds, the target recovers hit points and ability damage as if it had rested for a full day.
-          actor.system.skills.hea.rank >= 5 ? 2 : 1;
+    actor.system.skills.hea.rank + rank_bonus >= 20
+      ? 12
+      : // 15 Ranks: When you treat deadly wounds, the creature recovers hit point and ability damage as if it had rested for 3 days.
+        actor.system.skills.hea.rank + rank_bonus >= 15
+        ? 6
+        : // 10 Ranks: When you treat deadly wounds, the target recovers hit points as if it had rested for a full day with long-term care.
+          actor.system.skills.hea.rank + rank_bonus >= 10
+          ? 4
+          : // 5 Ranks: When you treat deadly wounds, the target recovers hit points and ability damage as if it had rested for a full day.
+            actor.system.skills.hea.rank + rank_bonus >= 5
+            ? 2
+            : 1;
 
   // get base heal amount
   let heal_amount = target_hd * heal_rank_multiplier;
@@ -37,6 +46,7 @@ async function healersHands() {
   let results_title = `${target_hd}[Target Total HD] * ${heal_rank_multiplier}[Heal Rank Multiplier]}`;
 
   // if we surpass the Treat Wounds DC by 5 we add the Int mod of the caster
+  // we add int because of https://www.aonprd.com/TraitDisplay.aspx?ItemName=Precise%20Treatment
   if (heal_check >= 25) {
     heal_amount += actor.system.abilities.int.mod;
     results_title += ` + ${actor.system.abilities.int.mod}[Intelligence Mod]`;
