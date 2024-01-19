@@ -35,7 +35,7 @@ async function wildShape() {
         eres: [
           { amount: 15, type: "cold" },
           { amount: 15, type: "acid" },
-          { amount: 15, type: "electricity" },
+          { amount: 15, type: "electric" },
         ],
         dr: [{ amount: 10, type: "evil" }],
       },
@@ -407,7 +407,7 @@ async function wildShape() {
     ];
 
     // set not a halfling buff
-    buffTwo = actor.collections.items.find(
+    let buffTwo = actor.collections.items.find(
       (o) => o.type === "buff" && o.name === "not a halfling",
     );
     buffUpdate.push({
@@ -422,14 +422,17 @@ async function wildShape() {
     let attackSpecial;
     let attackSave;
 
+    tempAttack[0].attackNotes = "";
+    tempAttack[0].save = {};
+
     // add energized claws damage to swarm attack
-    partObject = [
-      "1d6",
-      {
+    let partObject = {
+      formula: "1d6",
+      type: {
         values: [`${energy}`],
         custom: "",
       },
-    ];
+    };
     // add energized claws effects to swarmattack
     tempAttack[0].damage.parts[1] = partObject;
     if (!!changeData.sp) {
@@ -467,7 +470,10 @@ async function wildShape() {
     let newSenses = { ...senseObject, ...changeData.senses };
 
     // get elemental resists
-    let newEres = "";
+    let newEres = {
+      value: [],
+      custom: "",
+    };
     if (!!changeData.template.eres) {
       let elementHandled = false;
       changeData.template.eres.forEach((element) => {
@@ -475,19 +481,30 @@ async function wildShape() {
           element.amount += 5;
           elementHandled = true;
         }
-        newEres += `${element.type} ${element.amount} `;
+        newEres.value.push({
+          amount: element.amount,
+          types: [element.type, ""],
+          operator: "true",
+        });
       });
       if (!elementHandled) {
-        newEres += `${energy} 10 `;
+        newEres.value.push({
+          amount: 10,
+          types: [energy, ""],
+          operator: "true",
+        });
       }
-      newEres = newEres.trim();
+      newEres.custom = newEres.custom.trim();
     }
 
     // get damage reductions
-    let newDr = "";
+    let newDr = {
+      value: [],
+      custom: "",
+    };
     if (!!changeData.template.dr) {
       changeData.template.dr.forEach((element) => {
-        newDr += `${element.amount}/${element.type}`;
+        newDr.custom += `${element.amount}/${element.type}`;
       });
     }
 
