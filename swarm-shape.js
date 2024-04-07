@@ -31,7 +31,7 @@ async function wildShape() {
         senses: {
           dv: 60,
         },
-        sr: actor.system.attributes.hd.total + 5,
+        sr: actor.system.attributes.hd.total + 5 + 1,
         eres: [
           { amount: 15, type: "cold" },
           { amount: 15, type: "acid" },
@@ -45,7 +45,7 @@ async function wildShape() {
         senses: {
           dv: 60,
         },
-        sr: actor.system.attributes.hd.total + 5,
+        sr: actor.system.attributes.hd.total + 5 + 1,
         eres: [
           { amount: 15, type: "cold" },
           { amount: 15, type: "fire" },
@@ -391,6 +391,20 @@ async function wildShape() {
         }
         buffChanges.push(speedChange);
       }
+    }
+
+    // set SR in buff
+    if (!!changeData.template.sr) {
+      console.log(changeData.sr);
+      let srChange = {
+        formula: changeData.template.sr,
+        operator: "set",
+        subTarget: "spellResist",
+        modifier: "untyped",
+        priority: 100,
+        value: changeData.template.sr,
+      };
+      buffChanges.push(srChange);
     }
 
     // reget buff and set data
