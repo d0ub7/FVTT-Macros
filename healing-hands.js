@@ -10,7 +10,8 @@ if (!actor || !game.user.targets.ids[0] || game.user.targets.ids.length > 1) {
 async function healersHands() {
   // https://www.aonprd.com/ArchetypeDisplay.aspx?FixedName=Rogue%20Phantom%20Thief
   // Get Phantom Thief level / 2 for Refined Education
-  const rank_bonus = actor.classes.rogue.level / 2;
+  const rank_bonus = actor.classes.rogueUnchained.level / 2;
+  const actor_hd = actor.system.attributes.hd.total;
 
   // Roll the die
   const heal_roll = await actor.rollSkill("hea");
@@ -27,16 +28,16 @@ async function healersHands() {
   // https://aonprd.com/Skills.aspx?ItemName=Heal
   const heal_rank_multiplier =
     // 20 Ranks: When you treat deadly wounds, the target recovers hit point and ability damage as if it had rested for 3 days with long-term care.
-    actor.system.skills.hea.rank + rank_bonus >= 20
+    actor_hd + rank_bonus >= 20
       ? 12
       : // 15 Ranks: When you treat deadly wounds, the creature recovers hit point and ability damage as if it had rested for 3 days.
-        actor.system.skills.hea.rank + rank_bonus >= 15
+      actor_hd + rank_bonus >= 15
         ? 6
         : // 10 Ranks: When you treat deadly wounds, the target recovers hit points as if it had rested for a full day with long-term care.
-          actor.system.skills.hea.rank + rank_bonus >= 10
+        actor_hd + rank_bonus >= 10
           ? 4
           : // 5 Ranks: When you treat deadly wounds, the target recovers hit points and ability damage as if it had rested for a full day.
-            actor.system.skills.hea.rank + rank_bonus >= 5
+          actor_hd + rank_bonus >= 5
             ? 2
             : 1;
 
