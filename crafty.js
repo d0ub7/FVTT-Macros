@@ -58,7 +58,8 @@ async function crafty() {
   if (craftingOutput < craftingCost) {
     result = `<span class="lil-melded-roll">Failed to craft, you need ${craftingCost} sp, but only rolled ${craftingOutput}.</span>`;
   } else if (craftingOutput >= craftingCost * 2) {
-    result = `<span class="lil-melded-roll">Crafted multiple, you crafted ${craftingOutput} against a cost of ${craftingCost} sp.</span>`;
+    const multiple = Math.floor(craftingOutput / craftingCost);
+    result = `<span class="lil-melded-roll">Crafted ${multiple} items, you crafted ${craftingOutput} against a cost of ${craftingCost} sp.</span>`;
   } else if (craftingOutput >= craftingCost) {
     result = `<span class="lil-melded-roll">Crafted, you crafted ${craftingOutput} against a cost of ${craftingCost} sp.</span>`;
   }
