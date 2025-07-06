@@ -45,7 +45,7 @@ async function healersHands() {
   let heal_amount = target_hd * heal_rank_multiplier;
 
   // construct the help text for the picky DM
-  let results_title = `${target_hd}[Target Total HD] * ${heal_rank_multiplier}[Heal Rank Multiplier]}`;
+  let results_title = `${target_hd}[Target Total HD] * ${heal_rank_multiplier}[Heal Rank Multiplier]`;
 
   // if we surpass the Treat Wounds DC by 5 we add the Int mod of the caster
   // we add int because of https://www.aonprd.com/TraitDisplay.aspx?ItemName=Precise%20Treatment
