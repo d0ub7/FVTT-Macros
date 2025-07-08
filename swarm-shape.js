@@ -23,6 +23,8 @@ async function wildShape() {
   // globals
   const source = "Wild Shape";
   const energized = ["acid", "cold", "electric", "fire"];
+  const spellLevel = 6
+  const difficultyClass = 10 + spellLevel + actor.system.abilities.wis.mod;
 
   // templates object
   const templates = {
@@ -165,9 +167,9 @@ async function wildShape() {
       },
       sp: [
         {
-          dc: 15 + actor.system.abilities.dex.mod,
+          dc: difficultyClass,
           type: "ref",
-          description: `If a creature leaves an army ant swarm’s square, the swarm suffers 1d6 points of damage to reflect the loss of its numbers as several of the crawling pests continue to cling tenaciously to the victim. A creature with army ants clinging to him takes 3d6 points of damage at the end of his turn each round. As a full-round action, he can remove the ants with a DC ${15 + actor.system.abilities.dex.mod
+          description: `If a creature leaves an army ant swarm’s square, the swarm suffers 1d6 points of damage to reflect the loss of its numbers as several of the crawling pests continue to cling tenaciously to the victim. A creature with army ants clinging to him takes 3d6 points of damage at the end of his turn each round. As a full-round action, he can remove the ants with a DC ${difficultyClass
             } Reflex save. High wind or any amount of damage from an area effect destroys all clinging ants.`,
         },
         {
@@ -193,10 +195,10 @@ async function wildShape() {
             "Any living creature that begins its turn with a leech swarm in its space is drained of its blood and takes 1d3 points of Str and Con damage. ",
         },
         {
-          dc: 15,
+          dc: difficultyClass,
           type: "fort",
           description:
-            "save Fort DC 15; frequency 1/round for 2 rounds; effect 1d4 Dexterity drain; cure 1 save.",
+            `Fortitude DC ${difficultyClass}; frequency 1/round for 2 rounds; effect 1d4 Dexterity drain; cure 1 save.`,
         },
       ],
       di: ["weapon damage", "mind-affecting effects"],
@@ -215,9 +217,9 @@ async function wildShape() {
       },
       sp: [
         {
-          dc: 10 + actor.system.abilities.con.mod,
+          dc: difficultyClass,
           type: "fort",
-          description: `save Fortitude DC ${10 + actor.system.abilities.con.mod
+          description: `Fortitude DC ${difficultyClass
             }; frequency 1/round for 6 rounds; effect 1d4 Dex damage; cure 1 save.`,
         },
       ],
@@ -236,9 +238,9 @@ async function wildShape() {
       },
       sp: [
         {
-          dc: 13 + actor.system.abilities.con.mod,
+          dc: difficultyClass,
           type: "fort",
-          description: `save Fort DC ${13 + actor.system.abilities.con.mod
+          description: `Fortitude DC ${difficultyClass
             }; frequency 1/round for 4 rounds; effect 1 Dexterity damage; cure 1 save.`,
         },
       ],
@@ -273,9 +275,9 @@ async function wildShape() {
       },
       sp: [
         {
-          dc: 11 + actor.system.abilities.con.mod,
+          dc: difficultyClass,
           type: "fort",
-          description: `Filth fever: save Fort DC ${11 + actor.system.abilities.con.mod
+          description: `Filth fever: Fortitude DC ${difficultyClass
             }; onset 1d3 days; frequency 1/day; effect 1d3 Dex damage and 1d3 Con damage; cure 2 consecutive saves.`,
         },
       ],
@@ -295,9 +297,9 @@ async function wildShape() {
       },
       sp: [
         {
-          dc: 11 + actor.system.abilities.con.mod,
+          dc: difficultyClass,
           type: "fort",
-          description: `save Fort DC ${11 + actor.system.abilities.con.mod
+          description: `Fortitude DC ${difficultyClass
             }; frequency 1/round for 2 rounds; effect 1d2 Str; cure 1 save.`,
         },
       ],
