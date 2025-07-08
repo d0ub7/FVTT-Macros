@@ -73,7 +73,7 @@ async function wildShape() {
           operator: "add",
           target: "ability",
           subTarget: "str",
-          modifier: "untyped",
+          modifier: "size",
           priority: 0,
           value: -4,
         },
@@ -103,7 +103,7 @@ async function wildShape() {
           operator: "add",
           target: "ability",
           subTarget: "str",
-          modifier: "untyped",
+          modifier: "size",
           priority: 0,
           value: -4,
         },
@@ -133,7 +133,7 @@ async function wildShape() {
           operator: "add",
           target: "ability",
           subTarget: "str",
-          modifier: "untyped",
+          modifier: "size",
           priority: 0,
           value: -2,
         },
@@ -454,8 +454,6 @@ async function wildShape() {
       (o) => o.type === "attack" && o.name === "Swarm",
     );
     let tempAttack = duplicate(attack.system.actions);
-    let attackSpecial;
-    let attackSave;
 
     tempAttack[0].attackNotes = "";
     tempAttack[0].save = {};
