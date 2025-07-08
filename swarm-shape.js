@@ -167,9 +167,8 @@ async function wildShape() {
         {
           dc: 15 + actor.system.abilities.dex.mod,
           type: "ref",
-          description: `If a creature leaves an army ant swarm’s square, the swarm suffers 1d6 points of damage to reflect the loss of its numbers as several of the crawling pests continue to cling tenaciously to the victim. A creature with army ants clinging to him takes 3d6 points of damage at the end of his turn each round. As a full-round action, he can remove the ants with a DC ${
-            15 + actor.system.abilities.dex.mod
-          } Reflex save. High wind or any amount of damage from an area effect destroys all clinging ants.`,
+          description: `If a creature leaves an army ant swarm’s square, the swarm suffers 1d6 points of damage to reflect the loss of its numbers as several of the crawling pests continue to cling tenaciously to the victim. A creature with army ants clinging to him takes 3d6 points of damage at the end of his turn each round. As a full-round action, he can remove the ants with a DC ${15 + actor.system.abilities.dex.mod
+            } Reflex save. High wind or any amount of damage from an area effect destroys all clinging ants.`,
         },
         {
           description: `An army ant swarm can rapidly consume any creature it swarms over. Against helpless or nauseated targets, an army ant swarm attack deals 6d6 points of damage.`,
@@ -218,9 +217,8 @@ async function wildShape() {
         {
           dc: 10 + actor.system.abilities.con.mod,
           type: "fort",
-          description: `save Fortitude DC ${
-            10 + actor.system.abilities.con.mod
-          }; frequency 1/round for 6 rounds; effect 1d4 Dex damage; cure 1 save.`,
+          description: `save Fortitude DC ${10 + actor.system.abilities.con.mod
+            }; frequency 1/round for 6 rounds; effect 1d4 Dex damage; cure 1 save.`,
         },
       ],
       di: ["weapon damage", "mind-affecting effects"],
@@ -240,9 +238,8 @@ async function wildShape() {
         {
           dc: 13 + actor.system.abilities.con.mod,
           type: "fort",
-          description: `save Fort DC ${
-            13 + actor.system.abilities.con.mod
-          }; frequency 1/round for 4 rounds; effect 1 Dexterity damage; cure 1 save.`,
+          description: `save Fort DC ${13 + actor.system.abilities.con.mod
+            }; frequency 1/round for 4 rounds; effect 1 Dexterity damage; cure 1 save.`,
         },
       ],
       di: ["weapon damage", "mind-affecting effects"],
@@ -278,9 +275,8 @@ async function wildShape() {
         {
           dc: 11 + actor.system.abilities.con.mod,
           type: "fort",
-          description: `Filth fever: save Fort DC ${
-            11 + actor.system.abilities.con.mod
-          }; onset 1d3 days; frequency 1/day; effect 1d3 Dex damage and 1d3 Con damage; cure 2 consecutive saves.`,
+          description: `Filth fever: save Fort DC ${11 + actor.system.abilities.con.mod
+            }; onset 1d3 days; frequency 1/day; effect 1d3 Dex damage and 1d3 Con damage; cure 2 consecutive saves.`,
         },
       ],
     },
@@ -301,14 +297,37 @@ async function wildShape() {
         {
           dc: 11 + actor.system.abilities.con.mod,
           type: "fort",
-          description: `save Fort DC ${
-            11 + actor.system.abilities.con.mod
-          }; frequency 1/round for 2 rounds; effect 1d2 Str; cure 1 save.`,
+          description: `save Fort DC ${11 + actor.system.abilities.con.mod
+            }; frequency 1/round for 2 rounds; effect 1d2 Str; cure 1 save.`,
         },
       ],
     },
   };
 
+  /**
+   * setItemsStatus
+   * @param {boolean} value - true to set items to active, false to set to inactive
+   */
+  async function setItemsStatus(value) {
+    // get all items
+    // reverse the boolean value to match the system
+    const oppositeValue = value ? "true" : "false";
+    const items = actor.collections.items.filter(
+      (o) => o.type === "equipment" || o.system.carried === oppositeValue.toString(),
+    );
+
+    // set active/inactive
+    const updates = [];
+    for (const item of items) {
+      updates.push({
+        _id: item.id,
+        "system.carried": value,
+      });
+    }
+
+    // update items
+    await actor.updateEmbeddedDocuments("Item", updates);
+  }
   /**
    * swarmShape
    * @param {string} form - the form to change into
@@ -324,7 +343,8 @@ async function wildShape() {
     const itemsToEmbed = [];
     if (form == actor.name) {
       changeData = { size: "sm", template: {} };
-      buffActive = false;
+      buffActive = false
+      setItemsStatus(true);
       chatMessage = `${actor.name} reverts to her natural form`;
     } else {
       const formData = forms[form];
@@ -334,6 +354,7 @@ async function wildShape() {
       changeData.changes.forEach((element) => {
         buffChanges.push(element);
       });
+      setItemsStatus(false);
       const numSwarm = Math.floor(druidLevel / changeData.mult);
       const suffix = numSwarm == 1 ? "swarm" : "swarms";
       chatMessage = `Iselda transforms into ${numSwarm} ${suffix} of ${template} ${energy} ${form}`;
@@ -570,7 +591,7 @@ async function wildShape() {
   // generate energy dropdown
   const energizedOptions = [];
   let energizedValue = { type: "select", label: "element" };
-  energized.forEach(function (element) {
+  energized.forEach(function(element) {
     let value = {
       html: element,
       value: { element: element },
