@@ -4,349 +4,6 @@
  * Assumes you have an attack with it's 0th action both named Swarm
  */
 
-// verify state
-if (!actor) {
-  ui.notifications.warn("Are you even real?");
-} else {
-  wildShape();
-}
-
-/**
- * wildShape
- * Entry point for the macro
- */
-async function wildShape() {
-  const druidLevel = actor.items.find(
-    (o) => o.type === "class" && o.name === "Druid",
-  )?.system.level;
-
-  /**
-   * setItemsStatus
-   * @param {boolean} value - true to set items to active, false to set to inactive
-   */
-  async function setItemsStatus(value) {
-    // get all items
-    // reverse the boolean value to match the system
-    const oppositeValue = value ? "true" : "false";
-    const items = actor.collections.items.filter(
-      (o) => o.type === "equipment" || o.system.carried === oppositeValue.toString(),
-    );
-
-    // set active/inactive
-    const updates = [];
-    for (const item of items) {
-      updates.push({
-        _id: item.id,
-        "system.carried": value,
-      });
-    }
-
-    // update items
-    await actor.updateEmbeddedDocuments("Item", updates);
-  }
-
-  /**
-   * swarmShape
-   * @param {string} form - the form to change into
-   * @param {string} template - the template to apply
-   * @param {string} energy - the energy to apply
-   */
-  async function swarmShape(form, template, energy) {
-    // organize data objects
-    let chatMessage = "";
-    let changeData = {};
-    let buffActive = true;
-    const buffChanges = [];
-    const itemsToEmbed = [];
-    if (form == actor.name) {
-      changeData = { size: "sm", template: {} };
-      buffActive = false
-      setItemsStatus(true);
-      chatMessage = `${actor.name} reverts to her natural form`;
-    } else {
-      const formData = FORMS[form];
-      const templateData = TEMPLATES[template];
-      const sizeData = CHANGES[formData.size];
-      changeData = { ...formData, ...templateData, ...sizeData };
-      changeData.changes.forEach((element) => {
-        buffChanges.push(element);
-      });
-      setItemsStatus(false);
-      const numSwarm = Math.floor(druidLevel / changeData.mult);
-      const suffix = numSwarm == 1 ? "swarm" : "swarms";
-      chatMessage = `Iselda transforms into ${numSwarm} ${suffix} of ${template} ${energy} ${form}`;
-    }
-
-    // create buff if it does not exist
-    // only exists to sync with mightyMorphin since it deletes buff
-    let buff = actor.collections.items.find(
-      (o) => o.type === "buff" && o.name === source,
-    );
-
-    if (!buff) {
-      let buffData = { system: {} };
-      buffData.system = duplicate(game.system.template.Item.buff);
-      for (let t of buffData.system.templates) {
-        mergeObject(
-          buffData.system,
-          duplicate(game.system.template.Item.templates[t]),
-        );
-      }
-      delete buffData.system.templates;
-
-      buffData.name = source;
-      buffData.type = "buff";
-      buffData.img = "systems/pf1/icons/spells/wild-jade-3.jpg";
-
-      itemsToEmbed.push(buffData);
-    }
-
-    // set duration of buff
-    let durationData = {
-      value: actor.system.attributes.hd.total.toString(),
-      units: "hour",
-    };
-
-    // set speeds inside buff
-    const newSpeeds = duplicate(actor.system.attributes.speed);
-    const speedTypes = Object.keys(newSpeeds);
-    if (!!changeData.speed) {
-      for (let i = 0; i < speedTypes.length; i++) {
-        // Find the speed the form gives for the type
-        let speed = changeData.speed[speedTypes[i]];
-        let speedChange = {
-          formula: "0",
-          operator: "set",
-          subTarget: speedTypes[i] + "Speed",
-          modifier: "base",
-          priority: 100,
-          value: 0,
-        };
-        if (!!speed) {
-          // if the form has this speed add it
-          speedChange.formula = speed.toString();
-          speedChange.value = speed;
-        }
-        buffChanges.push(speedChange);
-      }
-    }
-
-    // set SR in buff
-    if (!!changeData.template.sr) {
-      console.log(changeData.sr);
-      let srChange = {
-        formula: changeData.template.sr,
-        operator: "set",
-        subTarget: "spellResist",
-        modifier: "untyped",
-        priority: 100,
-        value: changeData.template.sr,
-      };
-      buffChanges.push(srChange);
-    }
-
-    // reget buff and set data
-    buff = actor.collections.items.find(
-      (o) => o.type === "buff" && o.name === source,
-    );
-    let buffUpdate = [
-      {
-        _id: buff.id,
-        "system.duration": durationData,
-        "system.changes": buffChanges,
-        "system.active": buffActive,
-      },
-    ];
-
-    // set not a halfling buff
-    let buffTwo = actor.collections.items.find(
-      (o) => o.type === "buff" && o.name === "not a halfling",
-    );
-    buffUpdate.push({
-      _id: buffTwo.id,
-      "system.active": buffActive,
-    });
-
-    let attack = actor.collections.items.find(
-      (o) => o.type === "attack" && o.name === "Swarm",
-    );
-    let tempAttack = duplicate(attack.system.actions);
-
-    tempAttack[0].attackNotes = "";
-    tempAttack[0].save = {};
-
-    // add energized claws damage to swarm attack
-    let partObject = {
-      formula: "1d6",
-      type: {
-        values: [`${energy}`],
-        custom: "",
-      },
-    };
-    // add energized claws effects to swarmattack
-    tempAttack[0].damage.parts[1] = partObject;
-    if (!!changeData.sp) {
-      changeData.sp.forEach((element) => {
-        if (!element.dc) {
-          tempAttack[0].attackNotes = element.description;
-        } else {
-          tempAttack[0].save = element;
-        }
-      });
-    }
-
-    // organize attack data
-    let attackUpdate = [
-      {
-        _id: attack.id,
-        "system.actions": tempAttack,
-      },
-    ];
-
-    // get senses
-    let senseObject = {
-      bs: 0,
-      bse: 0,
-      custom: "",
-      dv: 0,
-      ll: { enabled: false, multiplier: { dim: 2, bright: 2 } },
-      sc: false,
-      scent: false,
-      si: false,
-      sid: false,
-      tr: false,
-      ts: 0,
-    };
-    let newSenses = { ...senseObject, ...changeData.senses };
-
-    // get elemental resists
-    let newEres = {
-      value: [],
-      custom: "",
-    };
-    if (!!changeData.template.eres) {
-      let elementHandled = false;
-      changeData.template.eres.forEach((element) => {
-        if (energy == element.type) {
-          element.amount += 5;
-          elementHandled = true;
-        }
-        newEres.value.push({
-          amount: element.amount,
-          types: [element.type, ""],
-          operator: "true",
-        });
-      });
-      if (!elementHandled) {
-        newEres.value.push({
-          amount: 10,
-          types: [energy, ""],
-          operator: "true",
-        });
-      }
-      newEres.custom = newEres.custom.trim();
-    }
-
-    // get damage reductions
-    let newDr = {
-      value: [],
-      custom: "",
-    };
-    if (!!changeData.template.dr) {
-      changeData.template.dr.forEach((element) => {
-        newDr.custom += `${element.amount}/${element.type}`;
-      });
-    }
-
-    // get damage immunities
-    let newDi = "";
-    if (!!changeData.di) {
-      changeData.di.forEach((element) => {
-        newDi += element + " ";
-      });
-      newDi = newDi.trim();
-    }
-
-    // create object to merge
-    const objectToMerge = {
-      size: changeData.size,
-      eres: newEres,
-      dr: newDr,
-      "di.custom": newDi,
-      senses: newSenses,
-    };
-
-    // update actor
-    await actor.createEmbeddedDocuments("Item", itemsToEmbed);
-    await actor.updateEmbeddedDocuments("Item", attackUpdate);
-    await actor.updateEmbeddedDocuments("Item", buffUpdate);
-    await actor.update(mergeObject({ "system.traits": objectToMerge }));
-
-    // create chat message
-    await ChatMessage.create({ content: chatMessage });
-  }
-
-  // generate foundry form data
-  const inputs = [];
-  const buttons = [];
-
-  // generate template dropdown
-  const templateOptions = [];
-  let templateValue = { type: "select", label: "template" };
-  for (const template in templates) {
-    let value = {
-      html: template,
-      value: { template: template },
-    };
-    templateOptions.push(value);
-  }
-  templateValue.options = templateOptions;
-  inputs.push(templateValue);
-
-  // generate energy dropdown
-  const energizedOptions = [];
-  let energizedValue = { type: "select", label: "element" };
-  energized.forEach(function(element) {
-    let value = {
-      html: element,
-      value: { element: element },
-    };
-    energizedOptions.push(value);
-  });
-  energizedValue.options = energizedOptions;
-  inputs.push(energizedValue);
-
-  // generate wild shape form buttons
-  for (const form in forms) {
-    let value = {};
-    value = {
-      label: form,
-      value: form,
-    };
-    buttons.push(value);
-  }
-
-  // generate revert button
-  let revertButton = {
-    label: actor.name,
-    value: actor.name,
-  };
-  buttons.push(revertButton);
-
-  let formData = {};
-  formData.inputs = inputs;
-  formData.buttons = buttons;
-  if (!!formData) {
-    // generate form and pass info to swarmShape
-    const choice = await warpgate.menu(formData);
-    const form = choice.buttons;
-    const template = choice.inputs[0].template;
-    const element = choice.inputs[1].element;
-    await swarmShape(form, template, element);
-  }
-}
-
-
 // globals
 const SOURCE = "Wild Shape";
 const ENERGIZED = ["acid", "cold", "electric", "fire"];
@@ -505,7 +162,6 @@ const FORMS = {
     ],
     di: ["weapon damage", "mind-affecting effects"],
   },
-
   leeches: {
     mult: 8,
     size: "dim",
@@ -530,7 +186,6 @@ const FORMS = {
     ],
     di: ["weapon damage", "mind-affecting effects"],
   },
-
   centipedes: {
     mult: 8,
     size: "dim",
@@ -552,7 +207,6 @@ const FORMS = {
     ],
     di: ["weapon damage", "mind-affecting effects"],
   },
-
   wasps: {
     mult: 6,
     size: "dim",
@@ -573,7 +227,6 @@ const FORMS = {
     ],
     di: ["weapon damage", "mind-affecting effects"],
   },
-
   crabs: {
     mult: 6,
     size: "dim",
@@ -586,7 +239,6 @@ const FORMS = {
     },
     di: ["weapon damage", "mind-affecting effects"],
   },
-
   rats: {
     mult: 4,
     size: "tiny",
@@ -609,7 +261,6 @@ const FORMS = {
       },
     ],
   },
-
   spiders: {
     mult: 2,
     size: "dim",
@@ -632,4 +283,347 @@ const FORMS = {
     ],
   },
 };
+
+
+// verify state
+if (!actor) {
+  ui.notifications.warn("Are you even real?");
+} else {
+  wildShape();
+}
+
+
+/**
+ * wildShape
+ * Entry point for the macro
+ */
+async function wildShape() {
+  const druidLevel = actor.items.find(
+    (o) => o.type === "class" && o.name === "Druid",
+  )?.system.level;
+
+  /**
+   * setItemsStatus
+   * @param {boolean} value - true to set items to active, false to set to inactive
+   */
+  async function setItemsStatus(value) {
+    // get all items
+    // reverse the boolean value to match the system
+    const oppositeValue = value ? "true" : "false";
+    const items = actor.collections.items.filter(
+      (o) => o.type === "equipment" || o.system.carried === oppositeValue.toString(),
+    );
+
+    // set active/inactive
+    const updates = [];
+    for (const item of items) {
+      updates.push({
+        _id: item.id,
+        "system.carried": value,
+      });
+    }
+
+    // update items
+    await actor.updateEmbeddedDocuments("Item", updates);
+  }
+
+  /**
+   * swarmShape
+   * @param {string} form - the form to change into
+   * @param {string} template - the template to apply
+   * @param {string} energy - the energy to apply
+   */
+  async function swarmShape(form, template, energy) {
+    // organize data objects
+    let chatMessage = "";
+    let changeData = {};
+    let buffActive = true;
+    const buffChanges = [];
+    const itemsToEmbed = [];
+    if (form == actor.name) {
+      changeData = { size: "sm", template: {} };
+      buffActive = false
+      setItemsStatus(true);
+      chatMessage = `${actor.name} reverts to her natural form`;
+    } else {
+      const formData = FORMS[form];
+      const templateData = TEMPLATES[template];
+      const sizeData = CHANGES[formData.size];
+      changeData = { ...formData, ...templateData, ...sizeData };
+      changeData.changes.forEach((element) => {
+        buffChanges.push(element);
+      });
+      setItemsStatus(false);
+      const numSwarm = Math.floor(druidLevel / changeData.mult);
+      const suffix = numSwarm == 1 ? "swarm" : "swarms";
+      chatMessage = `Iselda transforms into ${numSwarm} ${suffix} of ${template} ${energy} ${form}`;
+    }
+
+    // create buff if it does not exist
+    // only exists to sync with mightyMorphin since it deletes buff
+    let buff = actor.collections.items.find(
+      (o) => o.type === "buff" && o.name === SOURCE,
+    );
+
+    if (!buff) {
+      let buffData = { system: {} };
+      buffData.system = duplicate(game.system.template.Item.buff);
+      for (let t of buffData.system.templates) {
+        mergeObject(
+          buffData.system,
+          duplicate(game.system.template.Item.templates[t]),
+        );
+      }
+      delete buffData.system.templates;
+
+      buffData.name = SOURCE;
+      buffData.type = "buff";
+      buffData.img = "systems/pf1/icons/spells/wild-jade-3.jpg";
+
+      itemsToEmbed.push(buffData);
+    }
+
+    // set duration of buff
+    let durationData = {
+      value: actor.system.attributes.hd.total.toString(),
+      units: "hour",
+    };
+
+    // set speeds inside buff
+    const newSpeeds = duplicate(actor.system.attributes.speed);
+    const speedTypes = Object.keys(newSpeeds);
+    if (!!changeData.speed) {
+      for (let i = 0; i < speedTypes.length; i++) {
+        // Find the speed the form gives for the type
+        let speed = changeData.speed[speedTypes[i]];
+        let speedChange = {
+          formula: "0",
+          operator: "set",
+          subTarget: speedTypes[i] + "Speed",
+          modifier: "base",
+          priority: 100,
+          value: 0,
+        };
+        if (!!speed) {
+          // if the form has this speed add it
+          speedChange.formula = speed.toString();
+          speedChange.value = speed;
+        }
+        buffChanges.push(speedChange);
+      }
+    }
+
+    // set SR in buff
+    if (!!changeData.template.sr) {
+      let srChange = {
+        formula: changeData.template.sr,
+        operator: "set",
+        subTarget: "spellResist",
+        modifier: "untyped",
+        priority: 100,
+        value: changeData.template.sr,
+      };
+      buffChanges.push(srChange);
+    }
+
+    // reget buff and set data
+    buff = actor.collections.items.find(
+      (o) => o.type === "buff" && o.name === SOURCE,
+    );
+    let buffUpdate = [
+      {
+        _id: buff.id,
+        "system.duration": durationData,
+        "system.changes": buffChanges,
+        "system.active": buffActive,
+      },
+    ];
+
+    // set not a halfling buff
+    let buffTwo = actor.collections.items.find(
+      (o) => o.type === "buff" && o.name === "not a halfling",
+    );
+    buffUpdate.push({
+      _id: buffTwo.id,
+      "system.active": buffActive,
+    });
+
+    let attack = actor.collections.items.find(
+      (o) => o.type === "attack" && o.name === "Swarm",
+    );
+    let tempAttack = duplicate(attack.system.actions);
+
+    tempAttack[0].attackNotes = "";
+    tempAttack[0].save = {};
+
+    // add energized claws damage to swarm attack
+    let partObject = {
+      formula: "1d6",
+      type: {
+        values: [`${energy}`],
+        custom: "",
+      },
+    };
+    // add energized claws effects to swarmattack
+    tempAttack[0].damage.parts[1] = partObject;
+    if (!!changeData.sp) {
+      changeData.sp.forEach((element) => {
+        if (!element.dc) {
+          tempAttack[0].attackNotes = element.description;
+        } else {
+          tempAttack[0].save = element;
+        }
+      });
+    }
+
+    // organize attack data
+    let attackUpdate = [
+      {
+        _id: attack.id,
+        "system.actions": tempAttack,
+      },
+    ];
+
+    // get senses
+    let senseObject = {
+      bs: 0,
+      bse: 0,
+      custom: "",
+      dv: 0,
+      ll: { enabled: false, multiplier: { dim: 2, bright: 2 } },
+      sc: false,
+      scent: false,
+      si: false,
+      sid: false,
+      tr: false,
+      ts: 0,
+    };
+    let newSenses = { ...senseObject, ...changeData.senses };
+
+    // get elemental resists
+    let newEres = {
+      value: [],
+      custom: "",
+    };
+    if (!!changeData.template.eres) {
+      let elementHandled = false;
+      changeData.template.eres.forEach((element) => {
+        if (energy == element.type) {
+          element.amount += 5;
+          elementHandled = true;
+        }
+        newEres.value.push({
+          amount: element.amount,
+          types: [element.type, ""],
+          operator: "true",
+        });
+      });
+      if (!elementHandled) {
+        newEres.value.push({
+          amount: 10,
+          types: [energy, ""],
+          operator: "true",
+        });
+      }
+      newEres.custom = newEres.custom.trim();
+    }
+
+    // get damage reductions
+    let newDr = {
+      value: [],
+      custom: "",
+    };
+    if (!!changeData.template.dr) {
+      changeData.template.dr.forEach((element) => {
+        newDr.custom += `${element.amount}/${element.type}`;
+      });
+    }
+
+    // get damage immunities
+    let newDi = "";
+    if (!!changeData.di) {
+      changeData.di.forEach((element) => {
+        newDi += element + " ";
+      });
+      newDi = newDi.trim();
+    }
+
+    // create object to merge
+    const objectToMerge = {
+      size: changeData.size,
+      eres: newEres,
+      dr: newDr,
+      "di.custom": newDi,
+      senses: newSenses,
+    };
+
+    // update actor
+    await actor.createEmbeddedDocuments("Item", itemsToEmbed);
+    await actor.updateEmbeddedDocuments("Item", attackUpdate);
+    await actor.updateEmbeddedDocuments("Item", buffUpdate);
+    await actor.update(mergeObject({ "system.traits": objectToMerge }));
+
+    // create chat message
+    await ChatMessage.create({ content: chatMessage });
+  }
+
+  // generate foundry form data
+  const inputs = [];
+  const buttons = [];
+
+  // generate template dropdown
+  const templateOptions = [];
+  let templateValue = { type: "select", label: "template" };
+  for (const template in TEMPLATES) {
+    let value = {
+      html: template,
+      value: { template: template },
+    };
+    templateOptions.push(value);
+  }
+  templateValue.options = templateOptions;
+  inputs.push(templateValue);
+
+  // generate energy dropdown
+  const energizedOptions = [];
+  let energizedValue = { type: "select", label: "element" };
+  ENERGIZED.forEach(function(element) {
+    let value = {
+      html: element,
+      value: { element: element },
+    };
+    energizedOptions.push(value);
+  });
+  energizedValue.options = energizedOptions;
+  inputs.push(energizedValue);
+
+  // generate wild shape form buttons
+  for (const form in FORMS) {
+    let value = {};
+    value = {
+      label: form,
+      value: form,
+    };
+    buttons.push(value);
+  }
+
+  // generate revert button
+  let revertButton = {
+    label: actor.name,
+    value: actor.name,
+  };
+  buttons.push(revertButton);
+
+  let formData = {};
+  formData.inputs = inputs;
+  formData.buttons = buttons;
+  if (!!formData) {
+    // generate form and pass info to swarmShape
+    const choice = await warpgate.menu(formData);
+    const form = choice.buttons;
+    const template = choice.inputs[0].template;
+    const element = choice.inputs[1].element;
+    await swarmShape(form, template, element);
+  }
+}
 
