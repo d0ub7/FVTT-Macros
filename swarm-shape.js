@@ -20,292 +20,6 @@ async function wildShape() {
     (o) => o.type === "class" && o.name === "Druid",
   )?.system.level;
 
-  // globals
-  const source = "Wild Shape";
-  const energized = ["acid", "cold", "electric", "fire"];
-  const spellLevel = 6
-  const difficultyClass = 10 + spellLevel + actor.system.abilities.wis.mod;
-
-  // templates object
-  const templates = {
-    clestial: {
-      template: {
-        senses: {
-          dv: 60,
-        },
-        sr: actor.system.attributes.hd.total + 5 + 1,
-        eres: [
-          { amount: 15, type: "cold" },
-          { amount: 15, type: "acid" },
-          { amount: 15, type: "electric" },
-        ],
-        dr: [{ amount: 10, type: "evil" }],
-      },
-    },
-    fiendish: {
-      template: {
-        senses: {
-          dv: 60,
-        },
-        sr: actor.system.attributes.hd.total + 5 + 1,
-        eres: [
-          { amount: 15, type: "cold" },
-          { amount: 15, type: "fire" },
-        ],
-        dr: [{ amount: 10, type: "good" }],
-      },
-    },
-  };
-
-  // size changes object
-  const changes = {
-    fine: {
-      changes: [
-        {
-          formula: "8",
-          operator: "add",
-          target: "ability",
-          subTarget: "dex",
-          modifier: "size",
-          priority: 0,
-          value: 6,
-        },
-        {
-          formula: "-6",
-          operator: "add",
-          target: "ability",
-          subTarget: "str",
-          modifier: "size",
-          priority: 0,
-          value: -4,
-        },
-        {
-          formula: "1",
-          operator: "add",
-          subTarget: "nac",
-          modifier: "untyped",
-          priority: 0,
-          value: 1,
-        },
-      ],
-    },
-    dim: {
-      changes: [
-        {
-          formula: "6",
-          operator: "add",
-          target: "ability",
-          subTarget: "dex",
-          modifier: "size",
-          priority: 0,
-          value: 6,
-        },
-        {
-          formula: "-4",
-          operator: "add",
-          target: "ability",
-          subTarget: "str",
-          modifier: "size",
-          priority: 0,
-          value: -4,
-        },
-        {
-          formula: "1",
-          operator: "add",
-          subTarget: "nac",
-          modifier: "untyped",
-          priority: 0,
-          value: 1,
-        },
-      ],
-    },
-    tiny: {
-      changes: [
-        {
-          formula: "4",
-          operator: "add",
-          target: "ability",
-          subTarget: "dex",
-          modifier: "size",
-          priority: 0,
-          value: 4,
-        },
-        {
-          formula: "-2",
-          operator: "add",
-          target: "ability",
-          subTarget: "str",
-          modifier: "size",
-          priority: 0,
-          value: -2,
-        },
-        {
-          formula: "1",
-          operator: "add",
-          subTarget: "nac",
-          modifier: "untyped",
-          priority: 0,
-          value: 1,
-        },
-      ],
-    },
-  };
-
-  // form change object
-  const forms = {
-    ants: {
-      mult: 10,
-      size: "fine",
-      speed: {
-        land: 30,
-        climb: 30,
-      },
-      senses: {
-        dv: 60,
-        scent: true,
-        custom: "Scent",
-      },
-      sp: [
-        {
-          dc: difficultyClass,
-          type: "ref",
-          description: `If a creature leaves an army ant swarm’s square, the swarm suffers 1d6 points of damage to reflect the loss of its numbers as several of the crawling pests continue to cling tenaciously to the victim. A creature with army ants clinging to him takes 3d6 points of damage at the end of his turn each round. As a full-round action, he can remove the ants with a DC ${difficultyClass
-            } Reflex save. High wind or any amount of damage from an area effect destroys all clinging ants.`,
-        },
-        {
-          description: `An army ant swarm can rapidly consume any creature it swarms over. Against helpless or nauseated targets, an army ant swarm attack deals 6d6 points of damage.`,
-        },
-      ],
-      di: ["weapon damage", "mind-affecting effects"],
-    },
-
-    leeches: {
-      mult: 8,
-      size: "dim",
-      speed: {
-        land: 5,
-        swim: 30,
-      },
-      senses: {
-        bs: 30,
-      },
-      sp: [
-        {
-          description:
-            "Any living creature that begins its turn with a leech swarm in its space is drained of its blood and takes 1d3 points of Str and Con damage. ",
-        },
-        {
-          dc: difficultyClass,
-          type: "fort",
-          description:
-            `Fortitude DC ${difficultyClass}; frequency 1/round for 2 rounds; effect 1d4 Dexterity drain; cure 1 save.`,
-        },
-      ],
-      di: ["weapon damage", "mind-affecting effects"],
-    },
-
-    centipedes: {
-      mult: 8,
-      size: "dim",
-      speed: {
-        land: 30,
-        climb: 30,
-      },
-      senses: {
-        dv: 60,
-        ts: 30,
-      },
-      sp: [
-        {
-          dc: difficultyClass,
-          type: "fort",
-          description: `Fortitude DC ${difficultyClass
-            }; frequency 1/round for 6 rounds; effect 1d4 Dex damage; cure 1 save.`,
-        },
-      ],
-      di: ["weapon damage", "mind-affecting effects"],
-    },
-
-    wasps: {
-      mult: 6,
-      size: "dim",
-      speed: {
-        land: 5,
-        fly: 40,
-      },
-      senses: {
-        dv: 60,
-      },
-      sp: [
-        {
-          dc: difficultyClass,
-          type: "fort",
-          description: `Fortitude DC ${difficultyClass
-            }; frequency 1/round for 4 rounds; effect 1 Dexterity damage; cure 1 save.`,
-        },
-      ],
-      di: ["weapon damage", "mind-affecting effects"],
-    },
-
-    crabs: {
-      mult: 6,
-      size: "dim",
-      speed: {
-        land: 30,
-        swim: 20,
-      },
-      senses: {
-        dv: 60,
-      },
-      di: ["weapon damage", "mind-affecting effects"],
-    },
-
-    rats: {
-      mult: 4,
-      size: "tiny",
-      speed: {
-        land: 15,
-        swim: 15,
-        climb: 15,
-      },
-      senses: {
-        ll: true,
-        scent: true,
-        custom: "Scent",
-      },
-      sp: [
-        {
-          dc: difficultyClass,
-          type: "fort",
-          description: `Filth fever: Fortitude DC ${difficultyClass
-            }; onset 1d3 days; frequency 1/day; effect 1d3 Dex damage and 1d3 Con damage; cure 2 consecutive saves.`,
-        },
-      ],
-    },
-
-    spiders: {
-      mult: 2,
-      size: "dim",
-      speed: {
-        land: 20,
-        climb: 20,
-      },
-      di: ["weapon damage", "mind-affecting effects"],
-      senses: {
-        dv: 60,
-        ts: 30,
-      },
-      sp: [
-        {
-          dc: difficultyClass,
-          type: "fort",
-          description: `Fortitude DC ${difficultyClass
-            }; frequency 1/round for 2 rounds; effect 1d2 Str; cure 1 save.`,
-        },
-      ],
-    },
-  };
-
   /**
    * setItemsStatus
    * @param {boolean} value - true to set items to active, false to set to inactive
@@ -330,6 +44,7 @@ async function wildShape() {
     // update items
     await actor.updateEmbeddedDocuments("Item", updates);
   }
+
   /**
    * swarmShape
    * @param {string} form - the form to change into
@@ -349,9 +64,9 @@ async function wildShape() {
       setItemsStatus(true);
       chatMessage = `${actor.name} reverts to her natural form`;
     } else {
-      const formData = forms[form];
-      const templateData = templates[template];
-      const sizeData = changes[formData.size];
+      const formData = FORMS[form];
+      const templateData = TEMPLATES[template];
+      const sizeData = CHANGES[formData.size];
       changeData = { ...formData, ...templateData, ...sizeData };
       changeData.changes.forEach((element) => {
         buffChanges.push(element);
@@ -630,3 +345,291 @@ async function wildShape() {
     await swarmShape(form, template, element);
   }
 }
+
+
+// globals
+const SOURCE = "Wild Shape";
+const ENERGIZED = ["acid", "cold", "electric", "fire"];
+const SPELLLEVEL = 6
+const DIFFICULTYCLASS = 10 + SPELLLEVEL + actor.system.abilities.wis.mod;
+
+// templates object
+const TEMPLATES = {
+  clestial: {
+    template: {
+      senses: {
+        dv: 60,
+      },
+      sr: actor.system.attributes.hd.total + 5 + 1,
+      eres: [
+        { amount: 15, type: "cold" },
+        { amount: 15, type: "acid" },
+        { amount: 15, type: "electric" },
+      ],
+      dr: [{ amount: 10, type: "evil" }],
+    },
+  },
+  fiendish: {
+    template: {
+      senses: {
+        dv: 60,
+      },
+      sr: actor.system.attributes.hd.total + 5 + 1,
+      eres: [
+        { amount: 15, type: "cold" },
+        { amount: 15, type: "fire" },
+      ],
+      dr: [{ amount: 10, type: "good" }],
+    },
+  },
+};
+
+// size changes object
+const CHANGES = {
+  fine: {
+    changes: [
+      {
+        formula: "8",
+        operator: "add",
+        target: "ability",
+        subTarget: "dex",
+        modifier: "size",
+        priority: 0,
+        value: 6,
+      },
+      {
+        formula: "-6",
+        operator: "add",
+        target: "ability",
+        subTarget: "str",
+        modifier: "size",
+        priority: 0,
+        value: -4,
+      },
+      {
+        formula: "1",
+        operator: "add",
+        subTarget: "nac",
+        modifier: "untyped",
+        priority: 0,
+        value: 1,
+      },
+    ],
+  },
+  dim: {
+    changes: [
+      {
+        formula: "6",
+        operator: "add",
+        target: "ability",
+        subTarget: "dex",
+        modifier: "size",
+        priority: 0,
+        value: 6,
+      },
+      {
+        formula: "-4",
+        operator: "add",
+        target: "ability",
+        subTarget: "str",
+        modifier: "size",
+        priority: 0,
+        value: -4,
+      },
+      {
+        formula: "1",
+        operator: "add",
+        subTarget: "nac",
+        modifier: "untyped",
+        priority: 0,
+        value: 1,
+      },
+    ],
+  },
+  tiny: {
+    changes: [
+      {
+        formula: "4",
+        operator: "add",
+        target: "ability",
+        subTarget: "dex",
+        modifier: "size",
+        priority: 0,
+        value: 4,
+      },
+      {
+        formula: "-2",
+        operator: "add",
+        target: "ability",
+        subTarget: "str",
+        modifier: "size",
+        priority: 0,
+        value: -2,
+      },
+      {
+        formula: "1",
+        operator: "add",
+        subTarget: "nac",
+        modifier: "untyped",
+        priority: 0,
+        value: 1,
+      },
+    ],
+  },
+};
+
+// form change object
+const FORMS = {
+  ants: {
+    mult: 10,
+    size: "fine",
+    speed: {
+      land: 30,
+      climb: 30,
+    },
+    senses: {
+      dv: 60,
+      scent: true,
+      custom: "Scent",
+    },
+    sp: [
+      {
+        type: "ref",
+        dc: DIFFICULTYCLASS,
+        description: `If a creature leaves an army ant swarm’s square, the swarm suffers 1d6 points of damage to reflect the loss of its numbers as several of the crawling pests continue to cling tenaciously to the victim. A creature with army ants clinging to him takes 3d6 points of damage at the end of his turn each round. As a full-round action, he can remove the ants with a DC ${DIFFICULTYCLASS
+          } Reflex save. High wind or any amount of damage from an area effect destroys all clinging ants.`,
+      },
+      {
+        description: `An army ant swarm can rapidly consume any creature it swarms over. Against helpless or nauseated targets, an army ant swarm attack deals 6d6 points of damage.`,
+      },
+    ],
+    di: ["weapon damage", "mind-affecting effects"],
+  },
+
+  leeches: {
+    mult: 8,
+    size: "dim",
+    speed: {
+      land: 5,
+      swim: 30,
+    },
+    senses: {
+      bs: 30,
+    },
+    sp: [
+      {
+        description:
+          "Any living creature that begins its turn with a leech swarm in its space is drained of its blood and takes 1d3 points of Str and Con damage. ",
+      },
+      {
+        dc: DIFFICULTYCLASS,
+        type: "fort",
+        description:
+          `Fortitude DC ${DIFFICULTYCLASS}; frequency 1/round for 2 rounds; effect 1d4 Dexterity drain; cure 1 save.`,
+      },
+    ],
+    di: ["weapon damage", "mind-affecting effects"],
+  },
+
+  centipedes: {
+    mult: 8,
+    size: "dim",
+    speed: {
+      land: 30,
+      climb: 30,
+    },
+    senses: {
+      dv: 60,
+      ts: 30,
+    },
+    sp: [
+      {
+        dc: DIFFICULTYCLASS,
+        type: "fort",
+        description: `Fortitude DC ${DIFFICULTYCLASS
+          }; frequency 1/round for 6 rounds; effect 1d4 Dex damage; cure 1 save.`,
+      },
+    ],
+    di: ["weapon damage", "mind-affecting effects"],
+  },
+
+  wasps: {
+    mult: 6,
+    size: "dim",
+    speed: {
+      land: 5,
+      fly: 40,
+    },
+    senses: {
+      dv: 60,
+    },
+    sp: [
+      {
+        dc: DIFFICULTYCLASS,
+        type: "fort",
+        description: `Fortitude DC ${DIFFICULTYCLASS
+          }; frequency 1/round for 4 rounds; effect 1 Dexterity damage; cure 1 save.`,
+      },
+    ],
+    di: ["weapon damage", "mind-affecting effects"],
+  },
+
+  crabs: {
+    mult: 6,
+    size: "dim",
+    speed: {
+      land: 30,
+      swim: 20,
+    },
+    senses: {
+      dv: 60,
+    },
+    di: ["weapon damage", "mind-affecting effects"],
+  },
+
+  rats: {
+    mult: 4,
+    size: "tiny",
+    speed: {
+      land: 15,
+      swim: 15,
+      climb: 15,
+    },
+    senses: {
+      ll: true,
+      scent: true,
+      custom: "Scent",
+    },
+    sp: [
+      {
+        dc: DIFFICULTYCLASS,
+        type: "fort",
+        description: `Filth fever: Fortitude DC ${DIFFICULTYCLASS
+          }; onset 1d3 days; frequency 1/day; effect 1d3 Dex damage and 1d3 Con damage; cure 2 consecutive saves.`,
+      },
+    ],
+  },
+
+  spiders: {
+    mult: 2,
+    size: "dim",
+    speed: {
+      land: 20,
+      climb: 20,
+    },
+    di: ["weapon damage", "mind-affecting effects"],
+    senses: {
+      dv: 60,
+      ts: 30,
+    },
+    sp: [
+      {
+        dc: DIFFICULTYCLASS,
+        type: "fort",
+        description: `Fortitude DC ${DIFFICULTYCLASS
+          }; frequency 1/round for 2 rounds; effect 1d2 Str; cure 1 save.`,
+      },
+    ],
+  },
+};
+
