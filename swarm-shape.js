@@ -1,6 +1,6 @@
 /**
  * Swarm Shape macro for Swarm Monger druid
- * Macro assumes you have Energiezed Claws + Planar Wild Shape
+ * Macro assumes you have Energized Claws + Planar Wild Shape
  * Assumes you have an attack with it's 0th action both named Swarm
  */
 
